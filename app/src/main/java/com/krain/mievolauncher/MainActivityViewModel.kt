@@ -97,11 +97,9 @@ class MainActivityViewModel : ViewModel() {
         }
     }
 
-    private fun getSuggestions(seq: CharSequence?): AtomicReferenceArray<App> {
-        if (seq.isNullOrEmpty()) {
-            return AtomicReferenceArray<App>(0)
-        }
-        return AtomicReferenceArray(
+    private fun getSuggestions(seq: CharSequence?): AtomicReferenceArray<App> = when {
+        seq.isNullOrEmpty() -> AtomicReferenceArray<App>(0)
+        else -> AtomicReferenceArray(
             appDao.getByName(seq.toString()).toTypedArray()
         )
     }
