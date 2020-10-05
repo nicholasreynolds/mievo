@@ -36,11 +36,6 @@ class MainActivityViewModel : ViewModel() {
         suggestionsUpdateDispatcher.close()
     }
 
-    fun getSuggestions(seq: CharSequence): AtomicReferenceArray<App> =
-        AtomicReferenceArray(
-            db.appDao().getByName(seq.toString()).toTypedArray()
-        )
-
     fun refreshApps() {
         viewModelScope.launch {
             val appDao = db.appDao()
@@ -89,8 +84,14 @@ class MainActivityViewModel : ViewModel() {
         viewModelScope.launch {
             val suggestions = getSuggestions(seq)
             suggestionsAdapter.suggestions = suggestions
+            suggestionsAdapter.notifyDataSetChanged()
         }
     }
+
+    private fun getSuggestions(seq: CharSequence): AtomicReferenceArray<App> =
+        AtomicReferenceArray(
+            db.appDao().getByName(seq.toString()).toTypedArray()
+        )
 
     private fun createDb(context: Context) {
         db = Room.databaseBuilder(
