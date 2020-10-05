@@ -1,19 +1,17 @@
 package com.krain.mievolauncher.recyclerview
 
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.krain.mievolauncher.R
 import com.krain.mievolauncher.room.App
 import java.util.concurrent.atomic.AtomicReferenceArray
 
 class SuggestionsAdapter : RecyclerView.Adapter<SuggestionViewHolder>() {
 
-    lateinit var suggestions: AtomicReferenceArray<App>
+    var suggestions = AtomicReferenceArray<App>(0)
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     override fun getItemCount(): Int = suggestions.length()
 

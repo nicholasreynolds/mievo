@@ -1,7 +1,6 @@
 package com.krain.mievolauncher.recyclerview
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -29,15 +28,15 @@ class SuggestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         view.text = item.name
         try {
             // Create launch intent for package
-            val intent: Intent? = itemView.context.packageManager
-                .getLaunchIntentForPackage(item.pkg)
-                ?.addCategory(Intent.CATEGORY_LAUNCHER)
-                ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val intent: Intent = itemView.context.packageManager
+                .getLaunchIntentForPackage(item.pkg)!!
+                .addCategory(Intent.CATEGORY_LAUNCHER)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             // Launch app
             view.setOnClickListener {
                 itemView.context.startActivity(intent)
             }
-        } catch (e: PackageManager.NameNotFoundException) {
+        } catch (e: NullPointerException) {
             Log.e("LAUNCH_ERROR", "Could not find package ${item.pkg}")
         }
     }

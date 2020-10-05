@@ -24,8 +24,7 @@ class MainActivityViewModel : ViewModel() {
         }
     lateinit var suggestionsAdapter: SuggestionsAdapter
 
-    val suggestionsUpdateDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-
+    private val vmDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private lateinit var pm: PackageManager
     private lateinit var db: Db
     private lateinit var apps: AtomicReferenceArray<App>
@@ -33,23 +32,23 @@ class MainActivityViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        suggestionsUpdateDispatcher.close()
+        vmDispatcher.close()
     }
 
     fun refreshApps() {
-        viewModelScope.launch {
+        viewModelScope.launch(vmDispatcher) {
             val appDao = db.appDao()
-            // check if database is empty
-            // if yes, insert all installed applications
+            //  check if database is empty
+            //      if yes, insert all installed applications
             if (appDao.getAll().isEmpty()) {
                 appDao.putAll(pm.getInstalledApplications(PackageManager.GET_META_DATA).map {
-                    App(it.name, it.packageName)
+                    App(pm.getApplicationLabel(it).toString(), it.packageName)
                 })
             }
-            // get changed packages
-            // if not empty, check if changed are installed
-            // if installed, insert into database
-            // if uninstalled, delete from database
+            //  get changed packages
+            //      if not empty, check if changed are installed
+            //          if installed, insert into database
+            //          if uninstalled, delete from database
             val changed = pm.getChangedPackages(sequenceNumber++)
             if (changed != null) {
                 val installed = mutableListOf<App>()
@@ -58,10 +57,12 @@ class MainActivityViewModel : ViewModel() {
                     try {
                         installed.add(
                             App(
-                                pm.getPackageInfo(
-                                    it,
-                                    PackageManager.GET_META_DATA
-                                ).applicationInfo.name,
+                                pm.getApplicationLabel(
+                                    pm.getPackageInfo(
+                                        it,
+                                        PackageManager.GET_META_DATA
+                                    ).applicationInfo
+                                ).toString(),
                                 it
                             )
                         )
@@ -81,10 +82,11 @@ class MainActivityViewModel : ViewModel() {
         if (seq.isNullOrEmpty()) {
             return
         }
-        viewModelScope.launch {
+        viewModelScope.launch(vmDispatcher) {
             val suggestions = getSuggestions(seq)
-            suggestionsAdapter.suggestions = suggestions
-            suggestionsAdapter.notifyDataSetChanged()
+            withContext(viewModelScope.coroutineContext) {
+                suggestionsAdapter.suggestions = suggestions
+            }
         }
     }
 
