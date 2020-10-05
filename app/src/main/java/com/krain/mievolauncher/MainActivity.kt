@@ -6,10 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
 import androidx.core.widget.addTextChangedListener
 import androidx.databinding.DataBindingUtil
-import androidx.room.Room
 
 import com.krain.mievolauncher.databinding.ActivityMainBinding
-import com.krain.mievolauncher.room.Db
+import com.krain.mievolauncher.recyclerview.SuggestionsAdapter
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -17,17 +16,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.pm = this.packageManager
-        createDb()
+        viewModel.appContext = applicationContext
+        viewModel.suggestionsAdapter = SuggestionsAdapter()
         binding = DataBindingUtil.setContentView(
             this,
             R.layout.activity_main
         )
+        binding.suggestions.adapter = viewModel.suggestionsAdapter
         binding.command.addTextChangedListener(
-            { _,_,_,_ -> },
-            { charSequence: CharSequence?,_,_,_ ->
-                viewModel.updateSuggestions(charSequence)
-            },
+            { _, _, _, _ -> },
+            { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence) },
             {}
         )
     }
@@ -35,16 +33,5 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.refreshApps()
-    }
-
-    // initialize room db in view model
-    private fun createDb() {
-        if (viewModel.db == null) {
-            viewModel.db = Room.databaseBuilder(
-                applicationContext,
-                Db::class.java,
-                "app-db"
-            ).build()
-        }
     }
 }

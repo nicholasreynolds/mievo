@@ -2,4 +2,5 @@
     <string name="app_name">MievoLauncher</string>
     <string name="prompt">" ~ "</string>
     <string name="promptHint">type command</string>
+    <string name="suggestionText">Suggested App</string>
 </resources>
