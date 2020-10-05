@@ -25,11 +25,12 @@ class MainActivityViewModel : ViewModel() {
         }
     lateinit var suggestionsAdapter: SuggestionsAdapter
 
+    private var sequenceNumber = 0
     private val vmDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private val pkgFlags = PackageManager.GET_META_DATA
     private lateinit var pm: PackageManager
     private lateinit var appDao: AppDao
     private lateinit var apps: AtomicReferenceArray<App>
-    private var sequenceNumber = 0
 
     override fun onCleared() {
         super.onCleared()
@@ -37,9 +38,6 @@ class MainActivityViewModel : ViewModel() {
     }
 
     fun updateSuggestions(seq: CharSequence?) {
-        if (seq.isNullOrEmpty()) {
-            return
-        }
         viewModelScope.launch(vmDispatcher) {
             val suggestions = getSuggestions(seq)
             withContext(viewModelScope.coroutineContext) {
@@ -61,11 +59,12 @@ class MainActivityViewModel : ViewModel() {
     //      if yes, insert all installed applications
     private suspend fun updateInstalled() {
         if (appDao.getAll().isEmpty()) {
-            appDao.putAll(pm.getInstalledApplications(PackageManager.GET_META_DATA).map {
+            appDao.putAll(pm.getInstalledApplications(pkgFlags).map {
                 App(pm.getApplicationLabel(it).toString(), it.packageName)
             })
         }
     }
+
     //  get changed packages
     //      if not empty, check if changed are installed
     //          if installed, insert into database
@@ -98,10 +97,14 @@ class MainActivityViewModel : ViewModel() {
         }
     }
 
-    private fun getSuggestions(seq: CharSequence): AtomicReferenceArray<App> =
-        AtomicReferenceArray(
+    private fun getSuggestions(seq: CharSequence?): AtomicReferenceArray<App> {
+        if (seq.isNullOrEmpty()) {
+            return AtomicReferenceArray<App>(0)
+        }
+        return AtomicReferenceArray(
             appDao.getByName(seq.toString()).toTypedArray()
         )
+    }
 
     private fun createDb(context: Context) {
         appDao = Room.databaseBuilder(
