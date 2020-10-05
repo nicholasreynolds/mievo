@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import com.krain.mievolauncher.recyclerview.SuggestionsAdapter
 import com.krain.mievolauncher.room.App
+import com.krain.mievolauncher.room.AppDao
 import com.krain.mievolauncher.room.Db
 import kotlinx.coroutines.*
 import java.util.concurrent.Executors
@@ -26,56 +27,13 @@ class MainActivityViewModel : ViewModel() {
 
     private val vmDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private lateinit var pm: PackageManager
-    private lateinit var db: Db
+    private lateinit var appDao: AppDao
     private lateinit var apps: AtomicReferenceArray<App>
     private var sequenceNumber = 0
 
     override fun onCleared() {
         super.onCleared()
         vmDispatcher.close()
-    }
-
-    fun refreshApps() {
-        viewModelScope.launch(vmDispatcher) {
-            val appDao = db.appDao()
-            //  check if database is empty
-            //      if yes, insert all installed applications
-            if (appDao.getAll().isEmpty()) {
-                appDao.putAll(pm.getInstalledApplications(PackageManager.GET_META_DATA).map {
-                    App(pm.getApplicationLabel(it).toString(), it.packageName)
-                })
-            }
-            //  get changed packages
-            //      if not empty, check if changed are installed
-            //          if installed, insert into database
-            //          if uninstalled, delete from database
-            val changed = pm.getChangedPackages(sequenceNumber++)
-            if (changed != null) {
-                val installed = mutableListOf<App>()
-                val uninstalled = mutableListOf<String>()
-                changed.packageNames.forEach {
-                    try {
-                        installed.add(
-                            App(
-                                pm.getApplicationLabel(
-                                    pm.getPackageInfo(
-                                        it,
-                                        PackageManager.GET_META_DATA
-                                    ).applicationInfo
-                                ).toString(),
-                                it
-                            )
-                        )
-                    } catch (e: PackageManager.NameNotFoundException) {
-                        uninstalled.add(it)
-                    }
-                }
-                appDao.putAll(installed)
-                appDao.deleteAllByPkgs(uninstalled)
-            }
-            // get all installed applications from database
-            apps = AtomicReferenceArray(appDao.getAll().toTypedArray())
-        }
     }
 
     fun updateSuggestions(seq: CharSequence?) {
@@ -90,16 +48,67 @@ class MainActivityViewModel : ViewModel() {
         }
     }
 
+    fun refreshApps() {
+        viewModelScope.launch(vmDispatcher) {
+            updateInstalled()
+//            updateChangedPkgs()
+            // get all installed applications from database
+            apps = AtomicReferenceArray(appDao.getAll().toTypedArray())
+        }
+    }
+
+    //  check if database is empty
+    //      if yes, insert all installed applications
+    private suspend fun updateInstalled() {
+        if (appDao.getAll().isEmpty()) {
+            appDao.putAll(pm.getInstalledApplications(PackageManager.GET_META_DATA).map {
+                App(pm.getApplicationLabel(it).toString(), it.packageName)
+            })
+        }
+    }
+    //  get changed packages
+    //      if not empty, check if changed are installed
+    //          if installed, insert into database
+    //          if uninstalled, delete from database
+    // NOTE: Not currently in use, but later could update apps after :uninstall
+    private suspend fun updateChangedPkgs() {
+        val changed = pm.getChangedPackages(sequenceNumber++)
+        if (changed != null) {
+            val installed = mutableListOf<App>()
+            val uninstalled = mutableListOf<String>()
+            changed.packageNames.forEach {
+                try {
+                    installed.add(
+                        App(
+                            pm.getApplicationLabel(
+                                pm.getPackageInfo(
+                                    it,
+                                    PackageManager.GET_META_DATA
+                                ).applicationInfo
+                            ).toString(),
+                            it
+                        )
+                    )
+                } catch (e: PackageManager.NameNotFoundException) {
+                    uninstalled.add(it)
+                }
+            }
+            appDao.putAll(installed)
+            appDao.deleteAllByPkgs(uninstalled)
+        }
+    }
+
     private fun getSuggestions(seq: CharSequence): AtomicReferenceArray<App> =
         AtomicReferenceArray(
-            db.appDao().getByName(seq.toString()).toTypedArray()
+            appDao.getByName(seq.toString()).toTypedArray()
         )
 
     private fun createDb(context: Context) {
-        db = Room.databaseBuilder(
+        appDao = Room.databaseBuilder(
             context,
             Db::class.java,
             "app-db"
         ).build()
+            .appDao()
     }
 }
