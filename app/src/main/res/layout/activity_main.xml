@@ -24,6 +24,7 @@
             android:layout_height="wrap_content"
             android:hint="@string/promptHint"
             android:singleLine="true"
+            android:textColor="@color/colorAccent"
             app:layout_constraintStart_toEndOf="@id/prompt"
             app:layout_constraintTop_toTopOf="parent" />
 
