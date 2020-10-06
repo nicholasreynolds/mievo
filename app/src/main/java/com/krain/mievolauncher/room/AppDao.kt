@@ -7,7 +7,7 @@ interface AppDao {
     @Query("select * from app")
     fun getAll() : List<App>
 
-    @Query("select * from app where name like (:name) || '%'")
+    @Query("select * from app where name like '%' || (:name) || '%'")
     fun getByName(name: String) : List<App>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
