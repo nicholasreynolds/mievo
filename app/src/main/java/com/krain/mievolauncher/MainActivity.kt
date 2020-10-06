@@ -1,6 +1,9 @@
 package com.krain.mievolauncher
 
+import android.app.Activity
 import android.os.Bundle
+import android.util.Log
+import android.view.inputmethod.InputMethodManager
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
@@ -12,10 +15,12 @@ import com.krain.mievolauncher.recyclerview.SuggestionsAdapter
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var imm : InputMethodManager
     private val viewModel: MainActivityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         viewModel.appContext = applicationContext
         viewModel.suggestionsAdapter = SuggestionsAdapter()
         binding = DataBindingUtil.setContentView(
@@ -28,10 +33,27 @@ class MainActivity : AppCompatActivity() {
             { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence) },
             {}
         )
+        binding.suggestions.setOnTouchListener { v,_ ->
+            v.performClick()
+            onTouch()
+        }
     }
 
     override fun onResume() {
         super.onResume()
         viewModel.refreshApps()
+    }
+
+    private fun onTouch() : Boolean {
+        if (viewModel.suggestionsAdapter.suggestions.length() == 0) {
+            binding.command.requestFocus()
+            showKeyboard()
+            return true
+        }
+        return false
+    }
+
+    private fun showKeyboard() {
+        imm.showSoftInput(currentFocus, 0)
     }
 }
