@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.krain.mievolauncher.MainActivity
 import com.krain.mievolauncher.R
 import com.krain.mievolauncher.room.App
 
@@ -34,7 +35,7 @@ class SuggestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             // Launch app
             view.setOnClickListener {
-                itemView.context.startActivity(intent)
+                (itemView.context as MainActivity).launchApp(intent)
             }
         } catch (e: NullPointerException) {
             Log.e("LAUNCH_ERROR", "Could not find package ${item.pkg}")

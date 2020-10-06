@@ -1,6 +1,7 @@
 package com.krain.mievolauncher
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 
@@ -44,6 +45,11 @@ class MainActivity : AppCompatActivity() {
         focusInput()
     }
 
+    fun launchApp(intent: Intent) {
+        clearInput()
+        startActivity(intent)
+    }
+
     private fun onTouch() : Boolean {
         if (viewModel.suggestionsAdapter.suggestions.length() == 0) {
             focusInput()
@@ -52,8 +58,15 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
+    // Focus command prompt and show keyboard
     private fun focusInput() {
         binding.command.requestFocus()
         imm.showSoftInput(currentFocus, 0)
+    }
+
+    // Clear command prompt and hide keyboard
+    private fun clearInput() {
+        binding.command.setText("")
+        imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 }
