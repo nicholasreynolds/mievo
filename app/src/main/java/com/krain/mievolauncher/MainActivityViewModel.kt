@@ -1,6 +1,7 @@
 package com.krain.mievolauncher
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -59,9 +60,17 @@ class MainActivityViewModel : ViewModel() {
     //      if yes, insert all installed applications
     private suspend fun updateInstalled() {
         if (appDao.getAll().isEmpty()) {
-            appDao.putAll(pm.getInstalledApplications(pkgFlags).map {
-                App(pm.getApplicationLabel(it).toString(), it.packageName)
-            })
+            appDao.putAll(
+                pm.queryIntentActivities(
+                    Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER),
+                    pkgFlags
+                ).map {
+                    App(
+                        pm.getApplicationLabel(it.activityInfo.applicationInfo).toString(),
+                        it.activityInfo.packageName
+                    )
+                }
+            )
         }
     }
 

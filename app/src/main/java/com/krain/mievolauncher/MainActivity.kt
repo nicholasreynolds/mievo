@@ -45,6 +45,11 @@ class MainActivity : AppCompatActivity() {
         focusInput()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.appContext = null
+    }
+
     fun launchApp(intent: Intent) {
         clearInput()
         startActivity(intent)
