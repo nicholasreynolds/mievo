@@ -2,7 +2,6 @@ package com.krain.mievolauncher
 
 import android.app.Activity
 import android.os.Bundle
-import android.util.Log
 import android.view.inputmethod.InputMethodManager
 
 import androidx.appcompat.app.AppCompatActivity
@@ -42,18 +41,19 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.refreshApps()
+        focusInput()
     }
 
     private fun onTouch() : Boolean {
         if (viewModel.suggestionsAdapter.suggestions.length() == 0) {
-            binding.command.requestFocus()
-            showKeyboard()
+            focusInput()
             return true
         }
         return false
     }
 
-    private fun showKeyboard() {
+    private fun focusInput() {
+        binding.command.requestFocus()
         imm.showSoftInput(currentFocus, 0)
     }
 }
