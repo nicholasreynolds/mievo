@@ -1,6 +1,6 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
+    android:width="30sp"
+    android:height="30sp"
     android:viewportWidth="30"
     android:viewportHeight="30">
     <path
@@ -8,5 +8,5 @@
         android:fillType="nonZero"
         android:strokeWidth="1"
         android:strokeColor="@color/colorAccent"
-        android:pathData= "M 13,19 a 4,4 0 1,0 0,-8" />
+        android:pathData= "M 15,19 a 4,4 0 1,0 0,-8" />
 </vector>

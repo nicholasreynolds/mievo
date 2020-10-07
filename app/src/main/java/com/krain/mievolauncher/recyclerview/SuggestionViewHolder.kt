@@ -39,7 +39,7 @@ class SuggestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                         ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 )
             }
-            true
+            return@setOnTouchListener true
         }
     }
 }
