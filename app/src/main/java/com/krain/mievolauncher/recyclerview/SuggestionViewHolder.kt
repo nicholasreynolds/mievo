@@ -3,6 +3,7 @@ package com.krain.mievolauncher.recyclerview
 import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -11,7 +12,7 @@ import com.krain.mievolauncher.MainActivity
 import com.krain.mievolauncher.R
 import com.krain.mievolauncher.room.App
 
-class SuggestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class SuggestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnTouchListener {
     companion object {
         fun from(parent: ViewGroup) =
             SuggestionViewHolder(
@@ -24,21 +25,29 @@ class SuggestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             )
     }
 
+    private lateinit var intent: Intent
+
     fun bind(item: App) {
         val view = itemView.findViewById<TextView>(R.id.suggestion)
         view.text = item.name
         try {
             // Create launch intent for package
-            val intent: Intent = itemView.context.packageManager
+            intent = itemView.context.packageManager
                 .getLaunchIntentForPackage(item.pkg)!!
                 .addCategory(Intent.CATEGORY_LAUNCHER)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             // Launch app
-            view.setOnClickListener {
-                (itemView.context as MainActivity).launchApp(intent)
-            }
+            view.setOnTouchListener(this)
         } catch (e: NullPointerException) {
             Log.e("LAUNCH_ERROR", "Could not find package ${item.pkg}")
         }
+    }
+
+    override fun onTouch(v: View, event: MotionEvent): Boolean {
+        v.performClick()
+        if(event.action == MotionEvent.ACTION_UP) {
+            (itemView.context as MainActivity).launchApp(intent)
+        }
+        return true
     }
 }

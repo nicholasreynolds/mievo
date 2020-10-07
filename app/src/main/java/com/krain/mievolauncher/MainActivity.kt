@@ -3,6 +3,8 @@ package com.krain.mievolauncher
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 
 import androidx.appcompat.app.AppCompatActivity
@@ -13,7 +15,7 @@ import androidx.databinding.DataBindingUtil
 import com.krain.mievolauncher.databinding.ActivityMainBinding
 import com.krain.mievolauncher.recyclerview.SuggestionsAdapter
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), View.OnTouchListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var imm : InputMethodManager
     private val viewModel: MainActivityViewModel by viewModels()
@@ -33,10 +35,7 @@ class MainActivity : AppCompatActivity() {
             { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence) },
             {}
         )
-        binding.suggestions.setOnTouchListener { v,_ ->
-            v.performClick()
-            onTouch()
-        }
+        binding.suggestions.setOnTouchListener(this)
     }
 
     override fun onResume() {
@@ -50,17 +49,18 @@ class MainActivity : AppCompatActivity() {
         viewModel.appContext = null
     }
 
-    fun launchApp(intent: Intent) {
-        clearInput()
-        startActivity(intent)
-    }
-
-    private fun onTouch() : Boolean {
-        if (viewModel.suggestionsAdapter.suggestions.length() == 0) {
+    override fun onTouch(v: View, me: MotionEvent) : Boolean {
+        v.performClick()
+        if (me.action == MotionEvent.ACTION_UP) {
             focusInput()
             return true
         }
         return false
+    }
+
+    fun launchApp(intent: Intent) {
+        clearInput()
+        startActivity(intent)
     }
 
     // Focus command prompt and show keyboard
