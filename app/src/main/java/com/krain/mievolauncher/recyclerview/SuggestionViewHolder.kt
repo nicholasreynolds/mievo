@@ -1,7 +1,6 @@
 package com.krain.mievolauncher.recyclerview
 
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -12,7 +11,7 @@ import com.krain.mievolauncher.MainActivity
 import com.krain.mievolauncher.R
 import com.krain.mievolauncher.room.App
 
-class SuggestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnTouchListener {
+class SuggestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     companion object {
         fun from(parent: ViewGroup) =
             SuggestionViewHolder(
@@ -25,29 +24,22 @@ class SuggestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), 
             )
     }
 
-    private lateinit var intent: Intent
-
     fun bind(item: App) {
         val view = itemView.findViewById<TextView>(R.id.suggestion)
         view.text = item.name
-        try {
-            // Create launch intent for package
-            intent = itemView.context.packageManager
-                .getLaunchIntentForPackage(item.pkg)!!
-                .addCategory(Intent.CATEGORY_LAUNCHER)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            // Launch app
-            view.setOnTouchListener(this)
-        } catch (e: NullPointerException) {
-            Log.e("LAUNCH_ERROR", "Could not find package ${item.pkg}")
+        // Launch app
+        view.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                v.performClick()
+                // Get launch intent for package, then launch
+                (itemView.context as MainActivity).launchApp(
+                    itemView.context.packageManager
+                        .getLaunchIntentForPackage(item.pkg)
+                        ?.addCategory(Intent.CATEGORY_LAUNCHER)
+                        ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            }
+            true
         }
-    }
-
-    override fun onTouch(v: View, event: MotionEvent): Boolean {
-        v.performClick()
-        if(event.action == MotionEvent.ACTION_UP) {
-            (itemView.context as MainActivity).launchApp(intent)
-        }
-        return true
     }
 }

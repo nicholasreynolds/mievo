@@ -58,7 +58,10 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener {
         return false
     }
 
-    fun launchApp(intent: Intent) {
+    fun launchApp(intent: Intent?) {
+        if (intent == null) {
+            return
+        }
         clearInput()
         startActivity(intent)
     }
