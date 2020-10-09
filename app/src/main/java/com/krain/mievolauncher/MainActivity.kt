@@ -9,14 +9,17 @@ import android.view.inputmethod.InputMethodManager
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.addTextChangedListener
 import androidx.databinding.DataBindingUtil
 
 import com.krain.mievolauncher.databinding.ActivityMainBinding
 import com.krain.mievolauncher.recyclerview.SuggestionsAdapter
+import com.krain.mievolauncher.util.MainActivityAnimator
 
 class MainActivity : AppCompatActivity(), View.OnTouchListener {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var anim: MainActivityAnimator
     private lateinit var imm : InputMethodManager
     private val viewModel: MainActivityViewModel by viewModels()
 
@@ -29,6 +32,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener {
             this,
             R.layout.activity_main
         )
+        anim = MainActivityAnimator(binding.root as ConstraintLayout)
         binding.suggestions.adapter = viewModel.suggestionsAdapter
         binding.command.addTextChangedListener(
             { _, _, _, _ -> },
@@ -36,6 +40,9 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener {
             {}
         )
         binding.suggestions.setOnTouchListener(this)
+        binding.chevron.setOnClickListener{
+            anim.toggleHistory()
+        }
     }
 
     override fun onResume() {
@@ -50,8 +57,8 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener {
     }
 
     override fun onTouch(v: View, me: MotionEvent) : Boolean {
-        v.performClick()
         if (me.action == MotionEvent.ACTION_UP) {
+            v.performClick()
             focusInput()
             return true
         }
