@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener {
             this,
             R.layout.activity_main
         )
-        anim = MainActivityAnimator(binding.root as ConstraintLayout)
+        anim = MainActivityAnimator(binding)
         binding.suggestions.adapter = viewModel.suggestionsAdapter
         binding.command.addTextChangedListener(
             { _, _, _, _ -> },
