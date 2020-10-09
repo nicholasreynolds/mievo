@@ -33,15 +33,17 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener {
             R.layout.activity_main
         )
         anim = MainActivityAnimator(binding)
-        binding.suggestions.adapter = viewModel.suggestionsAdapter
-        binding.command.addTextChangedListener(
-            { _, _, _, _ -> },
-            { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence) },
-            {}
-        )
-        binding.suggestions.setOnTouchListener(this)
-        binding.chevron.setOnClickListener{
-            anim.toggleHistory()
+        binding.apply {
+            suggestions.adapter = viewModel.suggestionsAdapter
+            command.addTextChangedListener(
+                { _, _, _, _ -> },
+                { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence) },
+                {}
+            )
+            suggestions.setOnTouchListener(this@MainActivity)
+            chevron.setOnClickListener{
+                anim.toggleHistory()
+            }
         }
     }
 
