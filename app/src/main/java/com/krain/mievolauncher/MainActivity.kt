@@ -45,6 +45,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener {
             suggestions.setOnTouchListener(this@MainActivity)
             chevron.setOnClickListener{
                 toggleHistory()
+                viewModel.updateSuggestions(command.text)
             }
         }
     }
