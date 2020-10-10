@@ -9,12 +9,12 @@ import android.view.inputmethod.InputMethodManager
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.addTextChangedListener
 import androidx.databinding.DataBindingUtil
 
 import com.krain.mievolauncher.databinding.ActivityMainBinding
-import com.krain.mievolauncher.recyclerview.SuggestionsAdapter
+import com.krain.mievolauncher.recyclerview.adapter.HistoryAdapter
+import com.krain.mievolauncher.recyclerview.adapter.SuggestionsAdapter
 import com.krain.mievolauncher.util.MainActivityAnimator
 
 class MainActivity : AppCompatActivity(), View.OnTouchListener {
@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener {
         imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         viewModel.appContext = applicationContext
         viewModel.suggestionsAdapter = SuggestionsAdapter()
+        viewModel.historyAdapter = HistoryAdapter()
         binding = DataBindingUtil.setContentView(
             this,
             R.layout.activity_main
@@ -35,14 +36,15 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener {
         anim = MainActivityAnimator(binding)
         binding.apply {
             suggestions.adapter = viewModel.suggestionsAdapter
+            history.adapter = viewModel.historyAdapter
             command.addTextChangedListener(
                 { _, _, _, _ -> },
-                { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence) },
+                { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence)},
                 {}
             )
             suggestions.setOnTouchListener(this@MainActivity)
             chevron.setOnClickListener{
-                anim.toggleHistory()
+                toggleHistory()
             }
         }
     }
@@ -71,8 +73,21 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener {
         if (intent == null) {
             return
         }
+        viewModel.insertHistory(binding.command.text.toString())
         clearInput()
         startActivity(intent)
+    }
+
+    fun setCommand(cmd: String?) {
+        if (cmd == null) {
+            return
+        }
+        toggleHistory()
+        binding.command.setText(cmd)
+    }
+
+    private fun toggleHistory() {
+        viewModel.showHistory = anim.toggleHistory()
     }
 
     // Focus command prompt and show keyboard

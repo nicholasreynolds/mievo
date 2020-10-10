@@ -6,10 +6,14 @@ import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
-import com.krain.mievolauncher.recyclerview.SuggestionsAdapter
-import com.krain.mievolauncher.room.App
-import com.krain.mievolauncher.room.AppDao
+import com.krain.mievolauncher.recyclerview.adapter.HistoryAdapter
+import com.krain.mievolauncher.recyclerview.adapter.SuggestionsAdapter
+import com.krain.mievolauncher.room.model.App
+import com.krain.mievolauncher.room.model.History
+import com.krain.mievolauncher.room.dao.AppDao
 import com.krain.mievolauncher.room.Db
+import com.krain.mievolauncher.room.dao.HistoryDao
+import com.krain.mievolauncher.room.model.LauncherEntity
 import kotlinx.coroutines.*
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReferenceArray
@@ -24,13 +28,16 @@ class MainActivityViewModel : ViewModel() {
             pm = value.packageManager
             viewModelScope.launch { createDb(value) }
         }
+    var showHistory: Boolean = false
     lateinit var suggestionsAdapter: SuggestionsAdapter
+    lateinit var historyAdapter: HistoryAdapter
 
     private var sequenceNumber = 0
     private val vmDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val pkgFlags = PackageManager.GET_META_DATA
     private lateinit var pm: PackageManager
     private lateinit var appDao: AppDao
+    private lateinit var histDao: HistoryDao
     private lateinit var apps: AtomicReferenceArray<App>
 
     override fun onCleared() {
@@ -40,9 +47,12 @@ class MainActivityViewModel : ViewModel() {
 
     fun updateSuggestions(seq: CharSequence?) {
         viewModelScope.launch(vmDispatcher) {
-            val suggestions = getSuggestions(seq)
+            val suggestions = AtomicReferenceArray(getSuggestions(seq))
             withContext(viewModelScope.coroutineContext) {
-                suggestionsAdapter.suggestions = suggestions
+                when(showHistory) {
+                    true -> historyAdapter.suggestions = suggestions as AtomicReferenceArray<History>
+                    false -> suggestionsAdapter.suggestions = suggestions as AtomicReferenceArray<App>
+                }
             }
         }
     }
@@ -53,6 +63,13 @@ class MainActivityViewModel : ViewModel() {
 //            updateChangedPkgs()
             // get all installed applications from database
             apps = AtomicReferenceArray(appDao.getAll().toTypedArray())
+        }
+    }
+
+    fun insertHistory(cmd: String) {
+        viewModelScope.launch(vmDispatcher) {
+            histDao.put(History(cmd))
+            historyAdapter.suggestions = AtomicReferenceArray(histDao.getAll().toTypedArray())
         }
     }
 
@@ -106,19 +123,21 @@ class MainActivityViewModel : ViewModel() {
         }
     }
 
-    private fun getSuggestions(seq: CharSequence?): AtomicReferenceArray<App> = when {
-        seq.isNullOrEmpty() -> AtomicReferenceArray<App>(0)
-        else -> AtomicReferenceArray(
-            appDao.getByName(seq.toString()).toTypedArray()
-        )
+    private fun getSuggestions(seq: CharSequence?): Array<out LauncherEntity> = when {
+        seq.isNullOrEmpty() -> emptyArray()
+        else -> when (showHistory) {
+            false -> appDao.getByName(seq.toString()).toTypedArray()
+            true -> histDao.getByDesc(seq.toString()).toTypedArray()
+        }
     }
 
     private fun createDb(context: Context) {
-        appDao = Room.databaseBuilder(
+        val db = Room.databaseBuilder(
             context,
             Db::class.java,
             "app-db"
         ).build()
-            .appDao()
+        appDao = db.appDao()
+        histDao = db.histDao()
     }
 }

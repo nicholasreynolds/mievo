@@ -1,6 +1,7 @@
-package com.krain.mievolauncher.room
+package com.krain.mievolauncher.room.dao
 
 import androidx.room.*
+import com.krain.mievolauncher.room.model.App
 
 @Dao
 interface AppDao {

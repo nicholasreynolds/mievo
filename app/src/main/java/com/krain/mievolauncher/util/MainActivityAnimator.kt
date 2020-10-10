@@ -18,12 +18,13 @@ class MainActivityAnimator(private val binding: ActivityMainBinding) {
         history.clone(root.context, R.layout.activity_main_hist)
     }
 
-    fun toggleHistory() {
+    fun toggleHistory(): Boolean {
         TransitionManager.beginDelayedTransition(root)
         val constraint = if (historyShown) main else history
         constraint.applyTo(root)
         historyShown = !historyShown
         rotateChevron(historyShown)
+        return historyShown
     }
 
     private fun rotateChevron(showing: Boolean) {
