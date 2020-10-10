@@ -28,9 +28,9 @@ class MainActivityAnimator(private val binding: ActivityMainBinding) {
     }
 
     private fun rotateChevron(showing: Boolean) {
-        val rot = if (showing) -90f else 0f
+        val rot = if (showing) -180f else 0f
         ObjectAnimator.ofFloat(binding.chevron, "rotation", rot).apply {
-            duration = 50
+            duration = 100
             start()
         }
     }
