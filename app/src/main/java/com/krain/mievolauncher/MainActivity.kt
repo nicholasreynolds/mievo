@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
         binding.apply {
             suggestions.adapter = viewModel.suggestionsAdapter
             history.adapter = viewModel.historyAdapter
+            history.layoutManager = LinearLayoutManager(applicationContext, LinearLayoutManager.VERTICAL, true)
             command.addTextChangedListener(
                 { _, _, _, _ -> },
                 { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence) },
