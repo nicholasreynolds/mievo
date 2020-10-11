@@ -11,24 +11,25 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
 import androidx.core.widget.addTextChangedListener
 import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 
 import com.krain.mievolauncher.databinding.ActivityMainBinding
 import com.krain.mievolauncher.recyclerview.adapter.HistoryAdapter
 import com.krain.mievolauncher.recyclerview.adapter.SuggestionsAdapter
 import com.krain.mievolauncher.util.MainActivityAnimator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 
-class MainActivity : AppCompatActivity(), View.OnTouchListener {
+class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope by MainScope() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var anim: MainActivityAnimator
-    private lateinit var imm : InputMethodManager
+    private lateinit var imm: InputMethodManager
     private val viewModel: MainActivityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         viewModel.appContext = applicationContext
-        viewModel.suggestionsAdapter = SuggestionsAdapter()
-        viewModel.historyAdapter = HistoryAdapter()
         binding = DataBindingUtil.setContentView(
             this,
             R.layout.activity_main
@@ -39,12 +40,12 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener {
             history.adapter = viewModel.historyAdapter
             command.addTextChangedListener(
                 { _, _, _, _ -> },
-                { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence)},
+                { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence) },
                 {}
             )
             suggestions.setOnTouchListener(this@MainActivity)
             history.setOnTouchListener(this@MainActivity)
-            chevron.setOnClickListener{
+            chevron.setOnClickListener {
                 toggleHistory()
                 viewModel.updateSuggestions(command.text)
             }
@@ -62,7 +63,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener {
         viewModel.appContext = null
     }
 
-    override fun onTouch(v: View, me: MotionEvent) : Boolean {
+    override fun onTouch(v: View, me: MotionEvent): Boolean {
         if (me.action == MotionEvent.ACTION_UP) {
             v.performClick()
             focusInput()
