@@ -14,17 +14,17 @@ import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 
 import com.krain.mievolauncher.databinding.ActivityMainBinding
-import com.krain.mievolauncher.recyclerview.adapter.HistoryAdapter
-import com.krain.mievolauncher.recyclerview.adapter.SuggestionsAdapter
 import com.krain.mievolauncher.util.MainActivityAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 
-class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope by MainScope() {
+class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope by MainScope(),
+    View.OnScrollChangeListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var anim: MainActivityAnimator
     private lateinit var imm: InputMethodManager
     private val viewModel: MainActivityViewModel by viewModels()
+    private var scrolling = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,13 +38,16 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
         binding.apply {
             suggestions.adapter = viewModel.suggestionsAdapter
             history.adapter = viewModel.historyAdapter
-            history.layoutManager = LinearLayoutManager(applicationContext, LinearLayoutManager.VERTICAL, true)
+            history.layoutManager =
+                LinearLayoutManager(applicationContext, LinearLayoutManager.VERTICAL, true)
             command.addTextChangedListener(
                 { _, _, _, _ -> },
                 { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence) },
                 {}
             )
+            suggestions.setOnScrollChangeListener(this@MainActivity)
             suggestions.setOnTouchListener(this@MainActivity)
+            history.setOnScrollChangeListener(this@MainActivity)
             history.setOnTouchListener(this@MainActivity)
             chevron.setOnClickListener {
                 toggleHistory()
@@ -65,10 +68,13 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
     }
 
     override fun onTouch(v: View, me: MotionEvent): Boolean {
+        v.performClick()
         if (me.action == MotionEvent.ACTION_UP) {
-            v.performClick()
-            focusInput()
-            return true
+            if(!scrolling) {
+                focusInput()
+                return true
+            }
+            scrolling = false
         }
         return false
     }
@@ -104,5 +110,15 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
     private fun clearInput() {
         binding.command.setText("")
         imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+    }
+
+    override fun onScrollChange(
+        v: View?,
+        scrollX: Int,
+        scrollY: Int,
+        oldScrollX: Int,
+        oldScrollY: Int
+    ) {
+        scrolling = true
     }
 }
