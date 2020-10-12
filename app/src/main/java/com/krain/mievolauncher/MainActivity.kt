@@ -83,6 +83,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
         if (intent == null) {
             return
         }
+        viewModel.incrementUsage(intent.`package`)
         viewModel.insertHistory(binding.command.text.toString())
         clearInput()
         startActivity(intent)

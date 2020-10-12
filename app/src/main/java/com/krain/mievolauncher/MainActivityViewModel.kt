@@ -69,6 +69,17 @@ class MainActivityViewModel : ViewModel() {
         }
     }
 
+    fun incrementUsage(pkg: String?) {
+        if(pkg == null) {
+            return
+        }
+        viewModelScope.launch(vmDispatcher) {
+            val app = appDao.getByPkg(pkg)
+            app.count++
+            appDao.increment(app)
+        }
+    }
+
     //  check if database is empty
     //      if yes, insert all installed applications
     private suspend fun updateInstalled() = appDao.putAll(
@@ -77,8 +88,9 @@ class MainActivityViewModel : ViewModel() {
             pkgFlags
         ).map {
             App(
+                it.activityInfo.packageName,
                 pm.getApplicationLabel(it.activityInfo.applicationInfo).toString(),
-                it.activityInfo.packageName
+                0
             )
         }
     )
@@ -103,7 +115,8 @@ class MainActivityViewModel : ViewModel() {
                                     PackageManager.GET_META_DATA
                                 ).applicationInfo
                             ).toString(),
-                            it
+                            it,
+                            0
                         )
                     )
                 } catch (e: PackageManager.NameNotFoundException) {

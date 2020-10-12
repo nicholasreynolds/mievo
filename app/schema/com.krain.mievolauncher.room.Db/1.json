@@ -2,12 +2,18 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "cf1b632b3f3a4268b1b1e5d3ab675cfc",
+    "identityHash": "003b364b9349cfd9242b444cf9538ede",
     "entities": [
       {
         "tableName": "App",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `pkg` TEXT NOT NULL, PRIMARY KEY(`name`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pkg` TEXT NOT NULL, `name` TEXT NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY(`pkg`))",
         "fields": [
+          {
+            "fieldPath": "pkg",
+            "columnName": "pkg",
+            "affinity": "TEXT",
+            "notNull": true
+          },
           {
             "fieldPath": "name",
             "columnName": "name",
@@ -15,15 +21,15 @@
             "notNull": true
           },
           {
-            "fieldPath": "pkg",
-            "columnName": "pkg",
-            "affinity": "TEXT",
+            "fieldPath": "count",
+            "columnName": "count",
+            "affinity": "INTEGER",
             "notNull": true
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "name"
+            "pkg"
           ],
           "autoGenerate": false
         },
@@ -54,7 +60,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cf1b632b3f3a4268b1b1e5d3ab675cfc')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '003b364b9349cfd9242b444cf9538ede')"
     ]
   }
 }
