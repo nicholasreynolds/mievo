@@ -8,13 +8,13 @@ interface HistoryDao {
     @Query("select * from history")
     fun getAll(): List<History>
 
-    @Query("select * from history where description like '%' || (:desc) || '%'")
+    @Query("select * from history where description like '%' || (:desc) || '%' order by description ASC")
     fun getByDesc(desc: String): List<History>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun put(hist: History)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun putAll(hists: List<History>)
 
     @Delete

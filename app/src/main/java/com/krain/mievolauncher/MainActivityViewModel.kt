@@ -41,9 +41,9 @@ class MainActivityViewModel : ViewModel() {
     private lateinit var pm: PackageManager
     private lateinit var appDao: AppDao
     private lateinit var histDao: HistoryDao
-    private lateinit var historyMode : HistoryMode
-    private lateinit var appMode : AppMode
-    private lateinit var mode : Mode
+    private lateinit var historyMode: HistoryMode
+    private lateinit var appMode: AppMode
+    private lateinit var mode: Mode
 
     override fun onCleared() {
         super.onCleared()
@@ -71,21 +71,17 @@ class MainActivityViewModel : ViewModel() {
 
     //  check if database is empty
     //      if yes, insert all installed applications
-    private suspend fun updateInstalled() {
-        if (appDao.getAll().isEmpty()) {
-            appDao.putAll(
-                pm.queryIntentActivities(
-                    Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER),
-                    pkgFlags
-                ).map {
-                    App(
-                        pm.getApplicationLabel(it.activityInfo.applicationInfo).toString(),
-                        it.activityInfo.packageName
-                    )
-                }
+    private suspend fun updateInstalled() = appDao.putAll(
+        pm.queryIntentActivities(
+            Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER),
+            pkgFlags
+        ).map {
+            App(
+                pm.getApplicationLabel(it.activityInfo.applicationInfo).toString(),
+                it.activityInfo.packageName
             )
         }
-    }
+    )
 
     //  get changed packages
     //      if not empty, check if changed are installed

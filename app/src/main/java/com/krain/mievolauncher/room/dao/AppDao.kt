@@ -8,13 +8,13 @@ interface AppDao {
     @Query("select * from app")
     fun getAll() : List<App>
 
-    @Query("select * from app where name like '%' || (:name) || '%'")
+    @Query("select * from app where name like '%' || (:name) || '%' order by name ASC")
     fun getByName(name: String) : List<App>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun put(app: App)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun putAll(apps: List<App>)
 
     @Delete
