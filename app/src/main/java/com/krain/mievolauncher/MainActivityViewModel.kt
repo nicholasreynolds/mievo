@@ -52,7 +52,7 @@ class MainActivityViewModel : ViewModel() {
 
     fun updateSuggestions(seq: CharSequence?) {
         viewModelScope.launch(vmDispatcher) {
-            mode.updateSuggestions(seq)
+            mode.updateSuggestions(seq?.trim())
         }
     }
 

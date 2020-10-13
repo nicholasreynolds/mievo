@@ -45,6 +45,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
                 { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence) },
                 {}
             )
+            command.setOnEditorActionListener{ _,_,_ -> return@setOnEditorActionListener true } // disable enter key
             suggestions.setOnScrollChangeListener(this@MainActivity)
             suggestions.setOnTouchListener(this@MainActivity)
             history.setOnScrollChangeListener(this@MainActivity)
@@ -79,6 +80,16 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
         return false
     }
 
+    override fun onScrollChange(
+        v: View?,
+        scrollX: Int,
+        scrollY: Int,
+        oldScrollX: Int,
+        oldScrollY: Int
+    ) {
+        scrolling = true
+    }
+
     fun launchApp(intent: Intent?) {
         if (intent == null) {
             return
@@ -111,15 +122,5 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
     private fun clearInput() {
         binding.command.setText("")
         imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
-    }
-
-    override fun onScrollChange(
-        v: View?,
-        scrollX: Int,
-        scrollY: Int,
-        oldScrollX: Int,
-        oldScrollY: Int
-    ) {
-        scrolling = true
     }
 }
