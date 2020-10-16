@@ -1,25 +1,25 @@
 package com.krain.mievolauncher
 
+import kotlinx.coroutines.*
+import java.util.concurrent.Executors
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
+import com.krain.mievolauncher.command.CommandEnum
 import com.krain.mievolauncher.command.Executable
-import com.krain.mievolauncher.command.RenameCmd
 import com.krain.mievolauncher.mode.AppMode
 import com.krain.mievolauncher.mode.HistoryMode
 import com.krain.mievolauncher.mode.Mode
+import com.krain.mievolauncher.room.Db
 import com.krain.mievolauncher.room.model.App
 import com.krain.mievolauncher.room.model.History
+import com.krain.mievolauncher.room.model.Command
 import com.krain.mievolauncher.room.dao.AppDao
 import com.krain.mievolauncher.room.dao.HistoryDao
-import com.krain.mievolauncher.room.Db
 import com.krain.mievolauncher.room.dao.CommandDao
-import com.krain.mievolauncher.room.model.Command
-import kotlinx.coroutines.*
-import java.util.concurrent.Executors
 
 class MainActivityViewModel : ViewModel() {
     var appContext: Context? = null
@@ -144,8 +144,8 @@ class MainActivityViewModel : ViewModel() {
     private fun loadCommands() {
         viewModelScope.launch(vmDispatcher) {
             commandDao.putAll(
-                listOf<Executable>(RenameCmd()).map {
-                    Command(it.name, it.toEnum())
+                CommandEnum.values().map {
+                    Command(it.cmd, it)
                 }
             )
         }
