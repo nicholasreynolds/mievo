@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
+import com.krain.mievolauncher.command.Executable
+import com.krain.mievolauncher.command.RenameCmd
 import com.krain.mievolauncher.mode.AppMode
 import com.krain.mievolauncher.mode.HistoryMode
 import com.krain.mievolauncher.mode.Mode
@@ -14,6 +16,8 @@ import com.krain.mievolauncher.room.model.History
 import com.krain.mievolauncher.room.dao.AppDao
 import com.krain.mievolauncher.room.dao.HistoryDao
 import com.krain.mievolauncher.room.Db
+import com.krain.mievolauncher.room.dao.CommandDao
+import com.krain.mievolauncher.room.model.Command
 import kotlinx.coroutines.*
 import java.util.concurrent.Executors
 
@@ -32,8 +36,10 @@ class MainActivityViewModel : ViewModel() {
             field = value
             mode = if (value) historyMode else appMode
         }
-    val suggestionsAdapter by lazy { appMode.adapter }
+    var command: Executable? = null
+    val suggestionsAdapter by lazy { appMode.appAdapter }
     val historyAdapter by lazy { historyMode.adapter }
+    val commandsAdapter by lazy { appMode.cmdAdapter }
 
     private val vmDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val pkgFlags = PackageManager.GET_META_DATA
@@ -41,6 +47,7 @@ class MainActivityViewModel : ViewModel() {
     private lateinit var pm: PackageManager
     private lateinit var appDao: AppDao
     private lateinit var histDao: HistoryDao
+    private lateinit var commandDao: CommandDao
     private lateinit var historyMode: HistoryMode
     private lateinit var appMode: AppMode
     private lateinit var mode: Mode
@@ -70,7 +77,7 @@ class MainActivityViewModel : ViewModel() {
     }
 
     fun incrementUsage(pkg: String?) {
-        if(pkg == null) {
+        if (pkg == null) {
             return
         }
         viewModelScope.launch(vmDispatcher) {
@@ -130,8 +137,18 @@ class MainActivityViewModel : ViewModel() {
 
     private fun initMode() {
         historyMode = HistoryMode(histDao)
-        appMode = AppMode(appDao)
+        appMode = AppMode(appDao, commandDao)
         mode = appMode
+    }
+
+    private fun loadCommands() {
+        viewModelScope.launch(vmDispatcher) {
+            commandDao.putAll(
+                listOf<Executable>(RenameCmd()).map {
+                    Command(it.name, it.toEnum())
+                }
+            )
+        }
     }
 
     private fun createDb(context: Context) {
@@ -142,6 +159,8 @@ class MainActivityViewModel : ViewModel() {
         ).build()
         appDao = db.appDao()
         histDao = db.histDao()
+        commandDao = db.commandDao()
+        loadCommands()
         initMode()
     }
 }

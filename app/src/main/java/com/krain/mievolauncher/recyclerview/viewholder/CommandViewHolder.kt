@@ -8,30 +8,28 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.krain.mievolauncher.MainActivity
 import com.krain.mievolauncher.R
-import com.krain.mievolauncher.room.model.History
+import com.krain.mievolauncher.room.model.Command
 
-class HistoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class CommandViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     companion object {
         fun from(parent: ViewGroup) =
-            HistoryViewHolder(
+            CommandViewHolder(
                 LayoutInflater.from(parent.context)
                     .inflate(
-                        R.layout.suggestion,
+                        R.layout.suggestion_command,
                         parent,
                         false
                     )
             )
     }
 
-    fun bind(item: History) {
+    fun bind(item: Command) {
         val view = itemView.findViewById<TextView>(R.id.suggestion)
-        view.text = item.description
-        // Launch app
+        view.text = item.name
         view.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_UP) {
                 v.performClick()
-                // Get launch intent for package, then launch
-                (itemView.context as MainActivity).setQuery(item.description)
+                (itemView.context as MainActivity).setCommand(item)
             }
             return@setOnTouchListener true
         }

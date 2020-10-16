@@ -13,7 +13,7 @@
             android:id="@+id/history"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toTopOf="@id/command"
+            app:layout_constraintBottom_toTopOf="@id/query"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -23,13 +23,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/prompt"
-            app:layout_constraintBottom_toBottomOf="@id/command"
+            app:layout_constraintBottom_toBottomOf="@id/query"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/command"
+            app:layout_constraintTop_toTopOf="@id/query"
             />
 
         <EditText
-            android:id="@+id/command"
+            android:id="@+id/query"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="@string/promptHint"
@@ -44,17 +44,25 @@
             android:layout_height="wrap_content"
             android:src="@drawable/chevron"
             android:rotation="0"
-            app:layout_constraintBottom_toBottomOf="@id/command"
+            app:layout_constraintBottom_toBottomOf="@id/query"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/command"
+            app:layout_constraintTop_toTopOf="@id/query"
             />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/commands"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/suggestionHeight"
+            app:layout_constraintTop_toBottomOf="@id/query"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/suggestions"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintTop_toBottomOf="@id/command"
+            app:layout_constraintTop_toBottomOf="@id/commands"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />

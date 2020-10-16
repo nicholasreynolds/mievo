@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">MievoLauncher</string>
     <string name="prompt">" ~ "</string>
-    <string name="promptHint">type command</string>
+    <string name="promptHint">type</string>
     <string name="suggestionText">Suggested App</string>
+    <string name="cmdSuggestionText">Command</string>
 </resources>
