@@ -55,6 +55,8 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
             suggestions.setOnTouchListener(this@MainActivity)
             history.setOnScrollChangeListener(this@MainActivity)
             history.setOnTouchListener(this@MainActivity)
+            commands.setOnScrollChangeListener(this@MainActivity)
+            commands.setOnTouchListener(this@MainActivity)
             chevron.setOnClickListener {
                 toggleHistory()
                 viewModel.updateSuggestions(query.text)
