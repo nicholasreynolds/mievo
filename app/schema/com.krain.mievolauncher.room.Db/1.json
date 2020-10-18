@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "00b2b642d64a19dd5c6e6298bf1e65bc",
+    "identityHash": "3aeb56a0276fca73c3a1c8c8ddeb91d2",
     "entities": [
       {
         "tableName": "App",
@@ -33,7 +33,17 @@
           ],
           "autoGenerate": false
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_App_name_count",
+            "unique": false,
+            "columnNames": [
+              "name",
+              "count"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_App_name_count` ON `${TABLE_NAME}` (`name`, `count`)"
+          }
+        ],
         "foreignKeys": []
       },
       {
@@ -86,7 +96,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '00b2b642d64a19dd5c6e6298bf1e65bc')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3aeb56a0276fca73c3a1c8c8ddeb91d2')"
     ]
   }
 }
