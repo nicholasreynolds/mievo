@@ -118,6 +118,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
             return
         }
         binding.query.setText(query)
+        binding.query.setSelection(query.length)
     }
 
     fun toggleHistory() {
