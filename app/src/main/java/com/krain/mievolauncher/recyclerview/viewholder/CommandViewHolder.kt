@@ -29,7 +29,7 @@ class CommandViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         view.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_UP) {
                 v.performClick()
-                (itemView.context as MainActivity).setCommand(item)
+                (itemView.context as MainActivity).setQuery(item.name)
             }
             return@setOnTouchListener true
         }

@@ -6,6 +6,6 @@ abstract class Executable {
     // then executes definition.
     // Throws IllegalArgumentException if incorrect number of arguments or
     // arguments of incorrect type are passed
-    abstract suspend fun execute(vararg args: String)
-    abstract suspend fun undo()
+    abstract fun execute(vararg args: String)
+    abstract fun undo()
 }

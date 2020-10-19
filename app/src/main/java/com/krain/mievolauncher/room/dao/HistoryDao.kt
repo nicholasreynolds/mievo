@@ -12,11 +12,11 @@ interface HistoryDao {
     fun getByDesc(desc: String): List<History>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun put(hist: History)
+    fun put(hist: History)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun putAll(hists: List<History>)
+    fun putAll(hists: List<History>)
 
     @Delete
-    suspend fun delete(hist: History)
+    fun delete(hist: History)
 }

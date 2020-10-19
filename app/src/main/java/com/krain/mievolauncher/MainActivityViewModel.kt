@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.krain.mievolauncher.command.CommandEnum
+import com.krain.mievolauncher.command.CommandFactory
 import com.krain.mievolauncher.command.Executable
 import com.krain.mievolauncher.mode.Mode
 import com.krain.mievolauncher.mode.ModeManager
@@ -26,7 +28,6 @@ class MainActivityViewModel : ViewModel() {
             pm = PmService.getInstance(value).pm
             createDb(value)
         }
-    var command: Executable? = null
     val suggestionsAdapter by lazy { modeManager.appMode.appAdapter }
     val commandsAdapter by lazy { modeManager.appMode.cmdAdapter }
     val historyAdapter by lazy { modeManager.historyMode.adapter }
@@ -34,6 +35,7 @@ class MainActivityViewModel : ViewModel() {
     private val vmDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val pkgFlags = PackageManager.GET_META_DATA
     private var sequenceNumber = 0
+    private var command: Executable? = null
     private lateinit var pm: PackageManager
     private lateinit var appDao: AppDao
     private lateinit var histDao: HistoryDao
@@ -63,15 +65,17 @@ class MainActivityViewModel : ViewModel() {
         }
     }
 
-    fun processQuery(seq: CharSequence?): Boolean {
-        if (seq.isNullOrEmpty() || command == null) {
+    suspend fun processQuery(seq: CharSequence?): Boolean {
+        if (seq.isNullOrEmpty()) {
             return false
         }
         val args = parseArgs(seq)
-        if (args[0] != command?.enum?.cmd) return false
-        viewModelScope.launch(vmDispatcher) {
-            command!!.execute(args = args.drop(1).toTypedArray())
-        }
+        var cmd: CommandEnum? = null
+        viewModelScope.async(vmDispatcher) {
+            cmd = commandDao.getByName(args[0]).getOrNull(0)?.type
+        }.join()
+        if (cmd == null) return false
+        launchCommand(cmd!!, args.drop(1))
         return true
     }
 
@@ -94,7 +98,7 @@ class MainActivityViewModel : ViewModel() {
 
     //  check if database is empty
     //      if yes, insert all installed applications
-    private suspend fun updateInstalled() = appDao.putAll(
+    private fun updateInstalled() = appDao.putAll(
         pm.queryIntentActivities(
             Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER),
             pkgFlags
@@ -112,7 +116,7 @@ class MainActivityViewModel : ViewModel() {
     //          if installed, insert into database
     //          if uninstalled, delete from database
     // NOTE: Not currently in use, but later could update apps after :uninstall
-    private suspend fun updateChangedPkgs() {
+    private fun updateChangedPkgs() {
         val changed = pm.getChangedPackages(sequenceNumber++)
         if (changed != null) {
             val installed = mutableListOf<App>()
@@ -153,6 +157,18 @@ class MainActivityViewModel : ViewModel() {
     private fun initMode() {
         modeManager = ModeManager.getInstance()
         mode = modeManager.mode
+    }
+
+    private fun launchCommand(cmd: CommandEnum, args: List<String>) {
+        viewModelScope.launch(vmDispatcher) {
+            if (cmd == CommandEnum.UNDO) {
+                command?.undo()
+                command = null
+                return@launch
+            }
+            command = CommandFactory.getInstance(cmd)
+            command!!.execute(args = args.toTypedArray())
+        }
     }
 
     private fun parseArgs(seq: CharSequence): List<String> {

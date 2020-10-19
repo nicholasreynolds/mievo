@@ -15,17 +15,17 @@ interface AppDao {
     fun getByPkg(pkg: String) : App
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun put(app: App)
+    fun put(app: App)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun putAll(apps: List<App>)
+    fun putAll(apps: List<App>)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun update(app: App)
+    fun update(app: App)
 
     @Delete
-    suspend fun delete(app: App)
+    fun delete(app: App)
 
     @Query("delete from app where pkg in (:packages)")
-    suspend fun deleteAllByPkgs(packages: List<String>)
+    fun deleteAllByPkgs(packages: List<String>)
 }

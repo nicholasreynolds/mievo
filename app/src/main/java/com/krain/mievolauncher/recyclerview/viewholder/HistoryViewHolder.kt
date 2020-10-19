@@ -31,7 +31,10 @@ class HistoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             if (event.action == MotionEvent.ACTION_UP) {
                 v.performClick()
                 // Get launch intent for package, then launch
-                (itemView.context as MainActivity).setQuery(item.description)
+                (itemView.context as MainActivity).apply{
+                    setQuery(item.description)
+                    toggleHistory()
+                }
             }
             return@setOnTouchListener true
         }

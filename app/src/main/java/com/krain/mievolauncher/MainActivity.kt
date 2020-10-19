@@ -11,23 +11,23 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
 import androidx.core.widget.addTextChangedListener
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.krain.mievolauncher.command.CommandFactory
 
 import com.krain.mievolauncher.databinding.ActivityMainBinding
 import com.krain.mievolauncher.room.model.Command
 import com.krain.mievolauncher.util.MainActivityAnimator
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope by MainScope(),
     View.OnScrollChangeListener {
-    val viewModel: MainActivityViewModel by viewModels()
 
+    private val viewModel: MainActivityViewModel by viewModels()
+    private var scrolling = false
     private lateinit var binding: ActivityMainBinding
     private lateinit var anim: MainActivityAnimator
     private lateinit var imm: InputMethodManager
-    private var scrolling = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,8 +52,8 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
                 {}
             )
             query.setOnEditorActionListener { _, _, _ ->
-                if(viewModel.processQuery(query.text)) {
-                    clearInput()
+                viewModel.viewModelScope.launch {
+                    if(viewModel.processQuery(query.text)) clearText()
                 }
                 return@setOnEditorActionListener true
             } // disable enter key
@@ -113,20 +113,14 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
         startActivity(intent)
     }
 
-    fun setCommand(cmd: Command) {
-        setQuery(cmd.name)
-        viewModel.command = CommandFactory.getInstance(cmd.type)
-    }
-
     fun setQuery(query: String?) {
         if (query == null) {
             return
         }
-        toggleHistory()
         binding.query.setText(query)
     }
 
-    private fun toggleHistory() {
+    fun toggleHistory() {
         anim.toggleHistory()
         viewModel.switchMode()
     }
@@ -139,7 +133,11 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
 
     // Clear command prompt and hide keyboard
     private fun clearInput() {
-        binding.query.setText("")
+        clearText()
         imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+    }
+
+    private fun clearText() {
+        binding.query.setText("")
     }
 }

@@ -9,17 +9,17 @@ class RenameCmd : Executable() {
 
     override val enum = CommandEnum.RENAME
 
-    override suspend fun execute(vararg args: String) {
+    override fun execute(vararg args: String) {
         if(args.size != 2) return
         rename(args[0], args[1])
     }
 
-    override suspend fun undo() {
+    override fun undo() {
         if(op == null) return
-        rename(op!![1], op!![2])
+        rename(op!![1], op!![0])
     }
 
-    private suspend fun rename(appName: String, newName: String) {
+    private fun rename(appName: String, newName: String) {
         if(db == null) return
         var apps: List<App>
         db.appDao().apply {
