@@ -7,39 +7,29 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.Room
-import com.krain.mievolauncher.command.CommandEnum
 import com.krain.mievolauncher.command.Executable
-import com.krain.mievolauncher.mode.AppMode
-import com.krain.mievolauncher.mode.HistoryMode
 import com.krain.mievolauncher.mode.Mode
-import com.krain.mievolauncher.room.Db
+import com.krain.mievolauncher.mode.ModeManager
 import com.krain.mievolauncher.room.model.App
 import com.krain.mievolauncher.room.model.History
-import com.krain.mievolauncher.room.model.Command
 import com.krain.mievolauncher.room.dao.AppDao
 import com.krain.mievolauncher.room.dao.HistoryDao
 import com.krain.mievolauncher.room.dao.CommandDao
+import com.krain.mievolauncher.util.DbService
+import com.krain.mievolauncher.util.PmService
 
 class MainActivityViewModel : ViewModel() {
     var appContext: Context? = null
         set(value) {
-            if (value == null) {
-                return
-            }
+            if (value == null) return
             field = value
-            pm = value.packageManager
-            viewModelScope.launch { createDb(value) }
-        }
-    var showHistory: Boolean = false
-        set(value) {
-            field = value
-            mode = if (value) historyMode else appMode
+            pm = PmService.getInstance(value).pm
+            createDb(value)
         }
     var command: Executable? = null
-    val suggestionsAdapter by lazy { appMode.appAdapter }
-    val historyAdapter by lazy { historyMode.adapter }
-    val commandsAdapter by lazy { appMode.cmdAdapter }
+    val suggestionsAdapter by lazy { modeManager.appMode.appAdapter }
+    val commandsAdapter by lazy { modeManager.appMode.cmdAdapter }
+    val historyAdapter by lazy { modeManager.historyMode.adapter }
 
     private val vmDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val pkgFlags = PackageManager.GET_META_DATA
@@ -48,26 +38,12 @@ class MainActivityViewModel : ViewModel() {
     private lateinit var appDao: AppDao
     private lateinit var histDao: HistoryDao
     private lateinit var commandDao: CommandDao
-    private lateinit var historyMode: HistoryMode
-    private lateinit var appMode: AppMode
+    private lateinit var modeManager: ModeManager
     private lateinit var mode: Mode
 
     override fun onCleared() {
         super.onCleared()
         vmDispatcher.close()
-    }
-
-    fun updateSuggestions(seq: CharSequence?) {
-        viewModelScope.launch(vmDispatcher) {
-            mode.updateSuggestions(seq?.trim())
-        }
-    }
-
-    fun refreshApps() {
-        viewModelScope.launch(vmDispatcher) {
-            updateInstalled()
-//            updateChangedPkgs()
-        }
     }
 
     fun insertHistory(cmd: String) {
@@ -83,7 +59,36 @@ class MainActivityViewModel : ViewModel() {
         viewModelScope.launch(vmDispatcher) {
             val app = appDao.getByPkg(pkg)
             app.count++
-            appDao.increment(app)
+            appDao.update(app)
+        }
+    }
+
+    fun processQuery(seq: CharSequence?): Boolean {
+        if (seq.isNullOrEmpty() || command == null) {
+            return false
+        }
+        val args = parseArgs(seq)
+        if (args[0] != command?.enum?.cmd) return false
+        viewModelScope.launch(vmDispatcher) {
+            command!!.execute(args = args.drop(1).toTypedArray())
+        }
+        return true
+    }
+
+    fun refreshApps() {
+        viewModelScope.launch(vmDispatcher) {
+            updateInstalled()
+//            updateChangedPkgs()
+        }
+    }
+
+    fun switchMode() {
+        mode = modeManager.switchMode()
+    }
+
+    fun updateSuggestions(seq: CharSequence?) {
+        viewModelScope.launch(vmDispatcher) {
+            mode.updateSuggestions(seq?.trim())
         }
     }
 
@@ -135,32 +140,22 @@ class MainActivityViewModel : ViewModel() {
         }
     }
 
-    private fun initMode() {
-        historyMode = HistoryMode(histDao)
-        appMode = AppMode(appDao, commandDao)
-        mode = appMode
-    }
-
-    private fun loadCommands() {
+    private fun createDb(context: Context) {
         viewModelScope.launch(vmDispatcher) {
-            commandDao.putAll(
-                CommandEnum.values().map {
-                    Command(it.cmd, it)
-                }
-            )
+            val db = DbService.getInstance(context).db
+            appDao = db.appDao()
+            histDao = db.histDao()
+            commandDao = db.commandDao()
+            initMode()
         }
     }
 
-    private fun createDb(context: Context) {
-        val db = Room.databaseBuilder(
-            context,
-            Db::class.java,
-            "app-db"
-        ).build()
-        appDao = db.appDao()
-        histDao = db.histDao()
-        commandDao = db.commandDao()
-        loadCommands()
-        initMode()
+    private fun initMode() {
+        modeManager = ModeManager.getInstance()
+        mode = modeManager.mode
+    }
+
+    private fun parseArgs(seq: CharSequence): List<String> {
+        return seq.split(' ')
     }
 }

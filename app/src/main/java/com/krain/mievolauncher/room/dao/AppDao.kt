@@ -21,7 +21,7 @@ interface AppDao {
     suspend fun putAll(apps: List<App>)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun increment(app: App)
+    suspend fun update(app: App)
 
     @Delete
     suspend fun delete(app: App)

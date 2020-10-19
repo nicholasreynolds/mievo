@@ -22,10 +22,11 @@ import kotlinx.coroutines.MainScope
 
 class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope by MainScope(),
     View.OnScrollChangeListener {
+    val viewModel: MainActivityViewModel by viewModels()
+
     private lateinit var binding: ActivityMainBinding
     private lateinit var anim: MainActivityAnimator
     private lateinit var imm: InputMethodManager
-    private val viewModel: MainActivityViewModel by viewModels()
     private var scrolling = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,7 +51,12 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
                 { charSequence: CharSequence?, _, _, _ -> viewModel.updateSuggestions(charSequence) },
                 {}
             )
-            query.setOnEditorActionListener { _, _, _ -> return@setOnEditorActionListener true } // disable enter key
+            query.setOnEditorActionListener { _, _, _ ->
+                if(viewModel.processQuery(query.text)) {
+                    clearInput()
+                }
+                return@setOnEditorActionListener true
+            } // disable enter key
             suggestions.setOnScrollChangeListener(this@MainActivity)
             suggestions.setOnTouchListener(this@MainActivity)
             history.setOnScrollChangeListener(this@MainActivity)
@@ -121,7 +127,8 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
     }
 
     private fun toggleHistory() {
-        viewModel.showHistory = anim.toggleHistory()
+        anim.toggleHistory()
+        viewModel.switchMode()
     }
 
     // Focus command prompt and show keyboard
