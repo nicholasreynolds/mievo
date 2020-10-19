@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
             R.layout.activity_main
         )
         anim = MainActivityAnimator(binding)
-        binding.apply {
+        with(binding) {
             suggestions.adapter = viewModel.suggestionsAdapter
             history.adapter = viewModel.historyAdapter
             history.layoutManager =

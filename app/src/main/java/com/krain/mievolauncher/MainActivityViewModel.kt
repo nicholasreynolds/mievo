@@ -48,6 +48,14 @@ class MainActivityViewModel : ViewModel() {
         vmDispatcher.close()
     }
 
+    suspend fun processQuery(seq: CharSequence?): Boolean {
+        if (seq.isNullOrEmpty()) return false
+        val args = parseArgs(seq)
+        var cmd: CommandEnum = getCommandEnum(args[0]) ?: return false
+        launchCommand(cmd, args.drop(1))
+        return true
+    }
+
     fun insertHistory(cmd: String) {
         viewModelScope.launch(vmDispatcher) {
             histDao.put(History(cmd))
@@ -55,28 +63,12 @@ class MainActivityViewModel : ViewModel() {
     }
 
     fun incrementUsage(pkg: String?) {
-        if (pkg == null) {
-            return
-        }
+        if (pkg == null) return
         viewModelScope.launch(vmDispatcher) {
             val app = appDao.getByPkg(pkg)
             app.count++
             appDao.update(app)
         }
-    }
-
-    suspend fun processQuery(seq: CharSequence?): Boolean {
-        if (seq.isNullOrEmpty()) {
-            return false
-        }
-        val args = parseArgs(seq)
-        var cmd: CommandEnum? = null
-        viewModelScope.async(vmDispatcher) {
-            cmd = commandDao.getByName(args[0]).getOrNull(0)?.type
-        }.join()
-        if (cmd == null) return false
-        launchCommand(cmd!!, args.drop(1))
-        return true
     }
 
     fun refreshApps() {
@@ -94,6 +86,14 @@ class MainActivityViewModel : ViewModel() {
         viewModelScope.launch(vmDispatcher) {
             mode.updateSuggestions(seq?.trim())
         }
+    }
+
+    private suspend fun getCommandEnum(name: String) : CommandEnum? {
+        var cmd: CommandEnum? = null
+        viewModelScope.async(vmDispatcher) {
+            cmd = commandDao.getFirstByName(name)?.type
+        }.join()
+        return cmd
     }
 
     //  check if database is empty

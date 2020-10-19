@@ -14,6 +14,9 @@ interface CommandDao {
     @Query("select * from command where name like '%' || (:name) || '%'")
     fun getByName(name: String) : List<Command>
 
+    @Query("select * from command where name like '%' || (:name) || '%' limit 1")
+    fun getFirstByName(name: String) : Command
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun putAll(commands: List<Command>)
 }

@@ -22,7 +22,7 @@ class RenameCmd : Executable() {
     private fun rename(appName: String, newName: String) {
         if(db == null) return
         var apps: List<App>
-        db.appDao().apply {
+        with(db.appDao()) {
             apps = getByName(appName)
             if(apps.isEmpty()) return
 
