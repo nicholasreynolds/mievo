@@ -85,9 +85,9 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
     }
 
     override fun onTouch(v: View, me: MotionEvent): Boolean {
-        v.performClick()
         if (me.action == MotionEvent.ACTION_UP) {
             if (!scrolling) {
+                v.performClick()
                 focusInput()
                 return true
             }
@@ -106,11 +106,12 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
         scrolling = true
     }
 
-    fun launchApp(intent: Intent?) {
+    fun launchApp(name: String, intent: Intent?) {
         if (intent == null) {
             return
         }
         viewModel.incrementUsage(intent.`package`)
+        setQuery(name)
         insertQueryToHistory()
         clearInput()
         startActivity(intent)

@@ -33,6 +33,7 @@ class SuggestionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                 v.performClick()
                 // Get launch intent for package, then launch
                 (itemView.context as MainActivity).launchApp(
+                    item.name,
                     itemView.context.packageManager
                         .getLaunchIntentForPackage(item.pkg)
                         ?.addCategory(Intent.CATEGORY_LAUNCHER)
