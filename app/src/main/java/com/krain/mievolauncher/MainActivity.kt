@@ -53,7 +53,10 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
             )
             query.setOnEditorActionListener { _, _, _ ->
                 viewModel.viewModelScope.launch {
-                    if(viewModel.processQuery(query.text)) clearText()
+                    if(viewModel.processQuery(query.text)) {
+                        insertQueryToHistory()
+                        clearText()
+                    }
                 }
                 return@setOnEditorActionListener true
             } // disable enter key
@@ -108,7 +111,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
             return
         }
         viewModel.incrementUsage(intent.`package`)
-        viewModel.insertHistory(binding.query.text.toString())
+        insertQueryToHistory()
         clearInput()
         startActivity(intent)
     }
@@ -130,6 +133,10 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
     private fun focusInput() {
         binding.query.requestFocus()
         imm.showSoftInput(currentFocus, 0)
+    }
+
+    private fun insertQueryToHistory() {
+        viewModel.insertHistory(binding.query.text.toString())
     }
 
     // Clear command prompt and hide keyboard
