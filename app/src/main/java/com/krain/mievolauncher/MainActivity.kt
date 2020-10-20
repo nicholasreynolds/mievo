@@ -21,11 +21,9 @@ import com.krain.mievolauncher.room.model.Command
 import com.krain.mievolauncher.util.MainActivityAnimator
 import kotlinx.coroutines.*
 
-class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope by MainScope(),
-    View.OnScrollChangeListener {
+class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope by MainScope() {
 
     private val viewModel: MainActivityViewModel by viewModels()
-    private var scrolling = false
     private lateinit var binding: ActivityMainBinding
     private lateinit var anim: MainActivityAnimator
     private lateinit var imm: InputMethodManager
@@ -66,7 +64,6 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
                 history,
                 commands
             ).forEach {
-                it.setOnScrollChangeListener(this@MainActivity)
                 it.setOnTouchListener(this@MainActivity)
             }
             chevron.setOnClickListener {
@@ -88,24 +85,13 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
 
     override fun onTouch(v: View, me: MotionEvent): Boolean {
         if (me.action == MotionEvent.ACTION_UP) {
-            if (!scrolling) {
+            if ((v as RecyclerView).scrollState == RecyclerView.SCROLL_STATE_IDLE) {
                 v.performClick()
                 focusInput()
                 return true
             }
-            scrolling = false
         }
         return false
-    }
-
-    override fun onScrollChange(
-        v: View?,
-        scrollX: Int,
-        scrollY: Int,
-        oldScrollX: Int,
-        oldScrollY: Int
-    ) {
-        scrolling = true
     }
 
     fun launchApp(name: String, intent: Intent?) {
