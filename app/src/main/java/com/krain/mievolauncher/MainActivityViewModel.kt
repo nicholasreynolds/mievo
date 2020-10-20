@@ -18,6 +18,7 @@ import com.krain.mievolauncher.room.dao.AppDao
 import com.krain.mievolauncher.room.dao.HistoryDao
 import com.krain.mievolauncher.room.dao.CommandDao
 import com.krain.mievolauncher.util.DbService
+import com.krain.mievolauncher.util.QueryParser
 import com.krain.mievolauncher.util.PmService
 
 class MainActivityViewModel : ViewModel() {
@@ -50,7 +51,7 @@ class MainActivityViewModel : ViewModel() {
 
     suspend fun processQuery(seq: CharSequence?): Boolean {
         if (seq.isNullOrEmpty()) return false
-        val args = parseArgs(seq)
+        val args = QueryParser.parseArgs(seq)
         var cmd: CommandEnum = getCommandEnum(args[0]) ?: return false
         launchCommand(cmd, args.drop(1))
         return true
@@ -88,10 +89,10 @@ class MainActivityViewModel : ViewModel() {
         }
     }
 
-    private suspend fun getCommandEnum(name: String) : CommandEnum? {
+    private suspend fun getCommandEnum(name: String): CommandEnum? {
         var cmd: CommandEnum? = null
         viewModelScope.async(vmDispatcher) {
-            cmd = commandDao.getFirstByName(name)?.type
+            cmd = commandDao.getByName(name)?.type
         }.join()
         return cmd
     }
@@ -169,9 +170,5 @@ class MainActivityViewModel : ViewModel() {
             command = CommandFactory.getInstance(cmd)
             command!!.execute(args = args.toTypedArray())
         }
-    }
-
-    private fun parseArgs(seq: CharSequence): List<String> {
-        return seq.split(' ')
     }
 }
