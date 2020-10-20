@@ -92,7 +92,7 @@ class MainActivityViewModel : ViewModel() {
     private suspend fun getCommandEnum(name: String): CommandEnum? {
         var cmd: CommandEnum? = null
         viewModelScope.async(vmDispatcher) {
-            cmd = commandDao.getByName(name)?.type
+            cmd = commandDao.getFirstByExactName(name)?.type
         }.join()
         return cmd
     }
