@@ -13,6 +13,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.krain.mievolauncher.command.CommandFactory
 
 import com.krain.mievolauncher.databinding.ActivityMainBinding
@@ -53,19 +54,21 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
             )
             query.setOnEditorActionListener { _, _, _ ->
                 viewModel.viewModelScope.launch {
-                    if(viewModel.processQuery(query.text)) {
+                    if (viewModel.processQuery(query.text)) {
                         insertQueryToHistory()
                         clearText()
                     }
                 }
                 return@setOnEditorActionListener true
             } // disable enter key
-            suggestions.setOnScrollChangeListener(this@MainActivity)
-            suggestions.setOnTouchListener(this@MainActivity)
-            history.setOnScrollChangeListener(this@MainActivity)
-            history.setOnTouchListener(this@MainActivity)
-            commands.setOnScrollChangeListener(this@MainActivity)
-            commands.setOnTouchListener(this@MainActivity)
+            arrayOf(
+                suggestions,
+                history,
+                commands
+            ).forEach {
+                it.setOnScrollChangeListener(this@MainActivity)
+                it.setOnTouchListener(this@MainActivity)
+            }
             chevron.setOnClickListener {
                 toggleHistory()
             }
