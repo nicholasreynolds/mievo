@@ -68,7 +68,6 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
             commands.setOnTouchListener(this@MainActivity)
             chevron.setOnClickListener {
                 toggleHistory()
-                viewModel.updateSuggestions(query.text)
             }
         }
     }
@@ -128,6 +127,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, CoroutineScope b
     fun toggleHistory() {
         anim.toggleHistory()
         viewModel.switchMode()
+        viewModel.updateSuggestions(binding.query.text)
     }
 
     // Focus command prompt and show keyboard
