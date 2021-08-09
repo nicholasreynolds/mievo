@@ -20,6 +20,9 @@ interface AppDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun putAll(apps: List<App>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun putAndUpdateAll(apps: List<App>)
+
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun update(app: App)
 

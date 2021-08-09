@@ -1,13 +1,14 @@
 package com.krain.mievolauncher.command
 
+import com.krain.mievolauncher.room.model.Alias
 import com.krain.mievolauncher.room.model.App
 import com.krain.mievolauncher.util.DbService
 
-class RenameCmd : Executable() {
+class AliasCmd : Executable() {
     private val db = DbService.getInstance()?.db
     private var op: Array<String>? = null
 
-    override val enum = CommandEnum.RENAME
+    override val enum = CommandEnum.ALIAS
 
     override fun execute(vararg args: String) {
         if(args.size != 2) return
@@ -27,7 +28,9 @@ class RenameCmd : Executable() {
             if(apps.isEmpty()) return
 
             val app = apps[0]
-            app.name = newName
+            val alias = Alias(app.pkg, newName, app.name)
+            db.aliasDao().putOrUpdate(alias)
+            app.name = alias.name
             update(app)
 
             apps = getAll()

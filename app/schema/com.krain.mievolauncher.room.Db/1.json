@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "3aeb56a0276fca73c3a1c8c8ddeb91d2",
+    "identityHash": "0231e1e5d7fb3a2bca0f4df6458a1899",
     "entities": [
       {
         "tableName": "App",
@@ -44,6 +44,38 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_App_name_count` ON `${TABLE_NAME}` (`name`, `count`)"
           }
         ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "Alias",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pkg` TEXT NOT NULL, `name` TEXT NOT NULL, `prev` TEXT NOT NULL, PRIMARY KEY(`pkg`))",
+        "fields": [
+          {
+            "fieldPath": "pkg",
+            "columnName": "pkg",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "prev",
+            "columnName": "prev",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "pkg"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
         "foreignKeys": []
       },
       {
@@ -96,7 +128,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3aeb56a0276fca73c3a1c8c8ddeb91d2')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0231e1e5d7fb3a2bca0f4df6458a1899')"
     ]
   }
 }

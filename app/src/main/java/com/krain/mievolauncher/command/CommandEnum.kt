@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class CommandEnum(val cmd: String) {
-    RENAME("rename"),
+    ALIAS("alias"),
+    UNALIAS("unalias"),
     UNDO("undo")
 }
