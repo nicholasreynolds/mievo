@@ -9,34 +9,33 @@ class UnAliasCmd : Executable() {
     private var op: Pair<App, Alias>? = null
 
 
-    override val enum = CommandEnum.UNALIAS
+    override val enum = CommandEnum.ALIAS
 
     override fun execute(vararg args: String) {
-        if(args.size != 2) return
-        unalias(args[0], args[1])
+        if(args.size != 1) return
+        unalias(args[0])
     }
 
     override fun undo() {
         if(op == null || db == null) return
-        val app = op!!.first
-        app.name = op!!.second.prev
+        val app = db.appDao().getByPkg(op!!.first.pkg)
+        val alias = op!!.second
+        app.name = alias.name
         db.appDao().update(app)
-        db.aliasDao().deleteAllByPkgs(listOf(app.pkg))
+        db.aliasDao().putOrUpdate(alias)
     }
 
-    private fun unalias(appName: String, newName: String) {
+    private fun unalias(appName: String) {
         if(db == null) return
-        with(db.appDao()) {
-            val apps = getByName(appName)
-            if(apps.isEmpty()) return
+        val apps = db.appDao().getByName(appName)
+        if(apps.isEmpty()) return
 
-            val app = apps[0]
-            val alias = Alias(app.pkg, newName, app.name)
-            db.aliasDao().putOrUpdate(alias)
-            app.name = alias.name
-            update(app)
+        val app = apps[0]
+        val alias = db.aliasDao().getByPkg(app.pkg)
+        app.name = alias.prev
+        db.appDao().update(app)
+        db.aliasDao().delete(alias)
 
-            op = Pair(app, alias)
-        }
+        op = Pair(app, alias)
     }
 }

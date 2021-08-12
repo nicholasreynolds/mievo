@@ -2,4 +2,5 @@
 <resources>
     <dimen name="promptHeight">30sp</dimen>
     <dimen name="suggestionHeight">60dp</dimen>
+    <dimen name="suggestionCommandPadding">10dp</dimen>
 </resources>

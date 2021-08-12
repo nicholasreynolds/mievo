@@ -4,5 +4,6 @@
     android:id="@+id/suggestion"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:paddingHorizontal="@dimen/suggestionCommandPadding"
     android:singleLine="true"
     tools:text="@string/cmdSuggestionText" />
